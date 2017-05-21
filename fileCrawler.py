@@ -17,10 +17,17 @@ def cull_links(page):
                 break
     return links
 
+def filter(filetype, links):
+    result = []
+    for link in links:
+        if(link[-len(filetype):]) == filetype:
+            result.append(link)
+    return result
 
-page = fetch_url("https://www.golem.de")
-print (cull_links(page))
 
+page = fetch_url("https://iccl.inf.tu-dresden.de/web/Theoretische_Informatik_und_Logik_(SS2017)")
+links = (cull_links(page))
+print (filter("pdf", links))
 
 
 
