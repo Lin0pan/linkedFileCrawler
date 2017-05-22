@@ -1,33 +1,50 @@
 import urllib2
 import urllib
 import sys
+import socket
+from urlparse import urlparse
 
-url  = "https://iccl.inf.tu-dresden.de/web/Theoretische_Informatik_und_Logik_(SS2017)"
-filetype = "pdf"
+#url  = "https://iccl.inf.tu-dresden.de/web/Theoretische_Informatik_und_Logik_(SS2017)"
+#filetype = "pdf"
 
-print arguments
+def interpret_arguments():
+    url = sys.argv[1]
+    if not (url[0:7] == "https:/" or url[0:7] == "http://"):
+        url = socket.gethostbyname(url)
+    else:
+        url = url.translate(None, "\\")
+    filetype = sys.argv[2]
+    return url, filetype
+
 def cull_links(url):
     links = []
     response = urllib2.urlopen(url)
-    page = response.read()
-    domain = url.split("/")[0] + "//" + url.split("/")[2]
-    while page.find("href=")  >= 0:
-        ref_mark = page.find("href=") 
-        page = page[ref_mark + 6:]
-        end_of_link = False
-        for i in range((len(page)-1)):
-            c = page[i:i+1]
-            if c == "\"" or c == "\'":
-                link = page[0:i]
-                if not (link[0:7] == "https:/" or link[0:7] == "http://"):
-                    link = domain + link
-                links.append(link)
-                page = page[i:]
-                end_of_link = True
-                break
-        if not end_of_link:
-            page = ""
-    return links
+    parsed_url = urlparse(url)
+    scheme = parsed_url[0] + "://"
+    netloc = parsed_url[1]
+    path = parsed_url[2]
+    keyword = "href="
+    for i in range(2):
+        page = response.read()
+        while page.find(keyword)  >= 0:
+            ref_mark = page.find(keyword) 
+            page = page[ref_mark + len(keyword) + 1:]
+            end_of_link = False
+            for i in range((len(page)-1)):
+                c = page[i:i+1]
+                if c == "\"" or c == "\'":
+                    link = page[0:i]
+                    parsed_link = urlparse(link)
+                    if parsed_link[0] == "":
+                        link =  scheme + netloc + link
+                    links.append(link)
+                    page = page[i:]
+                    end_of_link = True
+                    break
+            if not end_of_link:
+                page = ""
+            keyword = "src="
+    return set(links)
 
 def filter(filetype, links):
     result = []
@@ -44,10 +61,11 @@ def save_files(links):
         urllib.urlretrieve(link, file_name)
 
 
-
+url = interpret_arguments()[0]
+filetype = interpret_arguments()[1]
 links = (cull_links(url))
-pdfs = (filter(filetype, links))
-save_files(pdfs)
+filtered_links = (filter(filetype, links))
+save_files(filtered_links)
 
 
 
