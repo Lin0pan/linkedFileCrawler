@@ -1,16 +1,13 @@
 import urllib2
 import urllib
 import sys
-import socket
 from urlparse import urlparse
-
-#url  = "https://iccl.inf.tu-dresden.de/web/Theoretische_Informatik_und_Logik_(SS2017)"
-#filetype = "pdf"
+import os.path
 
 def interpret_arguments():
     url = sys.argv[1]
     if not (url[0:7] == "https:/" or url[0:7] == "http://"):
-        url = socket.gethostbyname(url)
+        url = "http://" + url
     else:
         url = url.translate(None, "\\")
     filetype = sys.argv[2]
@@ -58,7 +55,13 @@ def save_files(links):
         print "downloading " + link + " ..."
         split = link.split("/")
         file_name = split[-1]
+        illigal_chars = "*|\:\"<>?/"
+        for c in illigal_chars:
+            file_name.replace(c, "")
+        while (os.path.exists(file_name)):
+            file_name = "_" + file_name
         urllib.urlretrieve(link, file_name)
+    print "downloaded " + str(len(links)) + " files."
 
 
 url = interpret_arguments()[0]
