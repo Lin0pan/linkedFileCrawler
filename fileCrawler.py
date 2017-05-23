@@ -16,30 +16,32 @@ def interpret_arguments():
 def cull_links(url):
     links = []
     response = urllib2.urlopen(url)
+    page = response.read()
     parsed_url = urlparse(url)
     scheme = parsed_url[0] + "://"
     netloc = parsed_url[1]
     path = parsed_url[2]
     keyword = "href="
+    depth_links = []
     for i in range(2):
-        page = response.read()
-        while page.find(keyword)  >= 0:
-            ref_mark = page.find(keyword) 
-            page = page[ref_mark + len(keyword) + 1:]
+        tmp_page = page
+        while tmp_page.find(keyword)  >= 0:
+            ref_mark = tmp_page.find(keyword) 
+            tmp_page = tmp_page[ref_mark + len(keyword) + 1:]
             end_of_link = False
-            for i in range((len(page)-1)):
-                c = page[i:i+1]
+            for i in range((len(tmp_page)-1)):
+                c = tmp_page[i:i+1]
                 if c == "\"" or c == "\'":
-                    link = page[0:i]
+                    link = tmp_page[0:i]
                     parsed_link = urlparse(link)
                     if parsed_link[0] == "":
                         link =  scheme + netloc + link
                     links.append(link)
-                    page = page[i:]
+                    tmp_page = tmp_page[i:]
                     end_of_link = True
                     break
             if not end_of_link:
-                page = ""
+                tmp_page = ""
         keyword = "src="
     return set(links)
 
@@ -66,7 +68,6 @@ def save_files(links):
 
 url = interpret_arguments()[0]
 filetype = interpret_arguments()[1]
-
 links = (cull_links(url))
 filtered_links = (filter(filetype, links))
 save_files(filtered_links)
