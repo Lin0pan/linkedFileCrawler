@@ -3,6 +3,7 @@ import urllib
 import sys
 from urlparse import urlparse
 import os.path
+import operator
 
 def interpret_arguments():
     url = sys.argv[1]
@@ -11,11 +12,18 @@ def interpret_arguments():
     else:
         url = url.translate(None, "\\")
     filetype = sys.argv[2]
-    return url, filetype, sys.argv[3]
+    return url, filetype, int(sys.argv[3])
 
 def cull_links(url):
     links = []
-    response = urllib2.urlopen(url)
+    try:
+        response = urllib2.urlopen(url)
+    except urllib2.HTTPError, e:
+        print "could not acess " + url + "(" + str(e.code) + ")"
+        return []
+    except urllib2.URLError, e:
+        return []
+
     page = response.read()
     parsed_url = urlparse(url)
     scheme = parsed_url[0] + "://"
@@ -61,24 +69,22 @@ def save_files(links):
         while (os.path.exists(filename)):
             filename = "_" + filename
         urllib.urlretrieve(link, filename)
-    print "downloaded " + str(len(links)) + " files."
-
-
-
 
 url = interpret_arguments()[0]
 filetype = interpret_arguments()[1]
 urls = [interpret_arguments()[0]]
-depth = interpret_arguments [2]
+max_depth = interpret_arguments()[2]
+
+
 def main(urls, depth, max_depth):
-    if max_depth >= depth:
+    if max_depth > depth:
         for u in urls:
             links = (cull_links(u))
             filtered_links = (filter(filetype, links))
             save_files(filtered_links)
             main(links, depth + 1, max_depth)
 
-main(urls, 0, depth)
+main(urls, 0, max_depth)
 
 
 
