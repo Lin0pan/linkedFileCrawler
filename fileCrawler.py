@@ -40,7 +40,7 @@ def cull_links(url):
                     break
             if not end_of_link:
                 page = ""
-            keyword = "src="
+        keyword = "src="
     return set(links)
 
 def filter(filetype, links):
@@ -54,18 +54,19 @@ def save_files(links):
     for link in links:
         print "downloading " + link + " ..."
         split = link.split("/")
-        file_name = split[-1]
+        filename = split[-1]
         illigal_chars = "*|\:\"<>?/"
         for c in illigal_chars:
-            file_name.replace(c, "")
-        while (os.path.exists(file_name)):
-            file_name = "_" + file_name
-        urllib.urlretrieve(link, file_name)
+            filename.replace(c, "")
+        while (os.path.exists(filename)):
+            filename = "_" + filename
+        urllib.urlretrieve(link, filename)
     print "downloaded " + str(len(links)) + " files."
 
 
 url = interpret_arguments()[0]
 filetype = interpret_arguments()[1]
+
 links = (cull_links(url))
 filtered_links = (filter(filetype, links))
 save_files(filtered_links)
