@@ -11,7 +11,7 @@ def interpret_arguments():
     else:
         url = url.translate(None, "\\")
     filetype = sys.argv[2]
-    return url, filetype
+    return url, filetype, sys.argv[3]
 
 def cull_links(url):
     links = []
@@ -21,13 +21,12 @@ def cull_links(url):
     scheme = parsed_url[0] + "://"
     netloc = parsed_url[1]
     path = parsed_url[2]
-    keyword = "href="
-    depth_links = []
-    for i in range(2):
+    keywords = ["href=","src="]
+    for key in keywords:
         tmp_page = page
-        while tmp_page.find(keyword)  >= 0:
-            ref_mark = tmp_page.find(keyword) 
-            tmp_page = tmp_page[ref_mark + len(keyword) + 1:]
+        while tmp_page.find(key)  >= 0:
+            ref_mark = tmp_page.find(key) 
+            tmp_page = tmp_page[ref_mark + len(key) + 1:]
             end_of_link = False
             for i in range((len(tmp_page)-1)):
                 c = tmp_page[i:i+1]
@@ -42,7 +41,6 @@ def cull_links(url):
                     break
             if not end_of_link:
                 tmp_page = ""
-        keyword = "src="
     return set(links)
 
 def filter(filetype, links):
@@ -66,11 +64,24 @@ def save_files(links):
     print "downloaded " + str(len(links)) + " files."
 
 
+
+
 url = interpret_arguments()[0]
 filetype = interpret_arguments()[1]
-links = (cull_links(url))
-filtered_links = (filter(filetype, links))
-save_files(filtered_links)
+urls = [interpret_arguments()[0]]
+depth = interpret_arguments [2]
+def main(urls, depth, max_depth):
+    if max_depth >= depth:
+        for u in urls:
+            links = (cull_links(u))
+            filtered_links = (filter(filetype, links))
+            save_files(filtered_links)
+            main(links, depth + 1, max_depth)
+
+main(urls, 0, depth)
+
+
+
 
 
 
