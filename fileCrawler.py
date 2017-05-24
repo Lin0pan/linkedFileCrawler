@@ -4,6 +4,7 @@ import sys
 from urlparse import urlparse
 import os.path
 import operator
+import time
 
 visited_pages = []
 
@@ -93,8 +94,10 @@ def main(urls, depth, max_depth):
                 save_files(filtered_links)
                 main(links, depth + 1, max_depth)
 
+s = time.time()
 main(urls, 0, max_depth)
-
+e = time.time()
+print("finished in: ") + str(e - s) + (" seconds")
 
 
 
